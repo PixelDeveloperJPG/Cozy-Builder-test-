@@ -152,6 +152,8 @@
             border-radius: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             cursor: move;
+            max-width: calc(100vw - 240px);
+            max-height: calc(100vh - 110px);
         }
 
         #statusBar {
@@ -405,20 +407,41 @@
 
         // Oyun nesnesi tanımları
         const itemTypes = {
-            sofa: { width: 120, height: 60, color: '#8b4513', emoji: '🛋️' },
-            chair: { width: 40, height: 40, color: '#654321', emoji: '🪑' },
-            table: { width: 100, height: 80, color: '#8b7355', emoji: '🪑' },
-            bed: { width: 140, height: 100, color: '#f0e6d2', emoji: '🛏️' },
-            cabinet: { width: 80, height: 120, color: '#654321', emoji: '🗄️' },
-            rug: { width: 150, height: 100, color: '#c41e3a', emoji: '🟥' },
-            lamp: { width: 30, height: 30, color: '#ffd700', emoji: '💡' },
-            plant: { width: 40, height: 50, color: '#228b22', emoji: '🪴' },
-            shelf: { width: 100, height: 40, color: '#8b7355', emoji: '📚' },
-            picture: { width: 60, height: 80, color: '#4169e1', emoji: '🖼️' },
-            candle: { width: 20, height: 30, color: '#ff6347', emoji: '🕯️' },
-            vase: { width: 30, height: 40, color: '#87ceeb', emoji: '🏺' },
-            book: { width: 40, height: 30, color: '#8b4513', emoji: '📖' }
+            sofa: { width: 120, height: 60, color: '#8b4513', emoji: '🛋️', hasImage: true },
+            chair: { width: 40, height: 40, color: '#654321', emoji: '🪑', hasImage: true },
+            table: { width: 100, height: 80, color: '#8b7355', emoji: '🪑', hasImage: true },
+            bed: { width: 140, height: 100, color: '#f0e6d2', emoji: '🛏️', hasImage: true },
+            cabinet: { width: 80, height: 120, color: '#654321', emoji: '🗄️', hasImage: true },
+            rug: { width: 150, height: 100, color: '#c41e3a', emoji: '🟥', hasImage: true },
+            lamp: { width: 30, height: 30, color: '#ffd700', emoji: '💡', hasImage: true },
+            plant: { width: 40, height: 50, color: '#228b22', emoji: '🪴', hasImage: true },
+            shelf: { width: 100, height: 40, color: '#8b7355', emoji: '📚', hasImage: true },
+            picture: { width: 60, height: 80, color: '#4169e1', emoji: '🖼️', hasImage: true },
+            candle: { width: 20, height: 30, color: '#ff6347', emoji: '🕯️', hasImage: true },
+            vase: { width: 30, height: 40, color: '#87ceeb', emoji: '🏺', hasImage: true },
+            book: { width: 40, height: 30, color: '#8b4513', emoji: '📖', hasImage: true }
         };
+
+        // RESİMLERİ YÜK - GitHub'dan çekecek!
+        const images = {};
+        const imagePath = './assets/items/'; // GitHub Pages'te bu şekilde çalışır
+        
+        function loadItemImages() {
+            Object.keys(itemTypes).forEach(itemName => {
+                if (itemTypes[itemName].hasImage) {
+                    const img = new Image();
+                    img.src = imagePath + itemName + '.png';
+                    img.onerror = () => {
+                        console.warn(`Resim yüklenemedi: ${itemName}.png - Emoji kullanılacak`);
+                    };
+                    images[itemName] = img;
+                }
+            });
+            console.log('Tileset resimleri yükleniyor...');
+        }
+        
+        // Resimleri hemen yükle
+        loadItemImages();
 
         // Oyun durumu
         class GameState {
@@ -514,8 +537,11 @@
         const connection = new GameConnection();
         const gameState = new GameState();
 
-        canvas.width = window.innerWidth - 240;
-        canvas.height = window.innerHeight - 110;
+        // SABİT OYUN ALANI - Herkes için aynı boyut!
+        const GAME_WIDTH = 1200;
+        const GAME_HEIGHT = 700;
+        canvas.width = GAME_WIDTH;
+        canvas.height = GAME_HEIGHT;
 
         // Yardımcı fonksiyonlar
         function copyCode() {
@@ -811,17 +837,28 @@
                     ctx.shadowOffsetX = 3;
                     ctx.shadowOffsetY = 3;
                     
-                    ctx.fillStyle = item.color;
-                    ctx.fillRect(-item.width / 2, -item.height / 2, item.width, item.height);
+                    // RESİM VARSA ONU ÇİZ, YOKSA EMOJİ
+                    const img = images[item.type];
+                    if (img && img.complete && img.naturalHeight > 0) {
+                        // Tileset resmini çiz
+                        ctx.drawImage(img, -item.width / 2, -item.height / 2, item.width, item.height);
+                    } else {
+                        // Yüklenmemişse fallback: renkli kutu + emoji
+                        ctx.fillStyle = item.color;
+                        ctx.fillRect(-item.width / 2, -item.height / 2, item.width, item.height);
+                        
+                        // Gölgeyi kapat emoji için
+                        ctx.shadowColor = 'transparent';
+                        
+                        // Emoji
+                        ctx.font = Math.min(item.width, item.height) * 0.6 + 'px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(item.emoji, 0, 0);
+                    }
                     
                     // Gölgeyi kapat
                     ctx.shadowColor = 'transparent';
-                    
-                    // Emoji
-                    ctx.font = Math.min(item.width, item.height) * 0.6 + 'px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(item.emoji, 0, 0);
                     
                     // Seçili eşya için border
                     if (gameState.selectedItem && gameState.selectedItem.id === item.id) {
