@@ -537,11 +537,14 @@
         const connection = new GameConnection();
         const gameState = new GameState();
 
-        // SABİT OYUN ALANI - Herkes için aynı boyut!
-        const GAME_WIDTH = 1200;
-        const GAME_HEIGHT = 700;
+        // SABİT OYUN ALANI - 1920x1080 Full HD
+        const GAME_WIDTH = 1920;
+        const GAME_HEIGHT = 1080;
         canvas.width = GAME_WIDTH;
         canvas.height = GAME_HEIGHT;
+        
+        // Pixel art için crisp rendering
+        ctx.imageSmoothingEnabled = false;
 
         // Yardımcı fonksiyonlar
         function copyCode() {
