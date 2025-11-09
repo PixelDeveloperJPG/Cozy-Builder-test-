@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cozy Builders - Multiplayer Room Designer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #connectionPanel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            text-align: center;
+            z-index: 1000;
+            min-width: 400px;
+        }
+
+        #connectionPanel h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        #connectionPanel button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            margin: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        #connectionPanel button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        #connectionPanel input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        #gameContainer {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #toolbar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255,255,255,0.95);
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .toolbar-btn:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+
+        #itemPanel {
+            position: absolute;
+            left: 10px;
+            top: 80px;
+            bottom: 10px;
+            width: 200px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 10px;
+            padding: 15px;
+            overflow-y: auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .item-category {
+            margin-bottom: 20px;
+        }
+
+        .item-category h3 {
+            color: #667eea;
+            font-size: 14px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+
+        .item-btn {
+            width: 100%;
+            background: white;
+            border: 2px solid #ddd;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .item-btn:hover {
+            background: #f0f0f0;
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        #canvas {
+            position: absolute;
+            left: 220px;
+            top: 80px;
+            background: #f5f5f5;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            cursor: move;
+        }
+
+        #statusBar {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.95);
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            font-size: 14px;
+            color: #667eea;
+        }
+
+        .color-picker {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        #connectionStatus {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ff4444;
+            margin-right: 5px;
+            animation: pulse 2s infinite;
+        }
+
+        #connectionStatus.connected {
+            background: #44ff44;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #roomCodeDisplay {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        #displayCode {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 18px;
+            color: #667eea;
+            text-align: center;
+        }
+
+        .status-message {
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="connectionPanel">
+        <h2>🏡 Cozy Builders</h2>
+        <p style="margin-bottom: 20px; color: #666;">Arkadaşınla birlikte oda tasarla!</p>
+        
+        <div id="mainMenu">
+            <button id="hostBtn">🎮 Oda Aç (Host)</button>
+            <button id="joinBtn">🔗 Odaya Katıl (Join)</button>
+        </div>
+
+        <div id="hostScreen" class="hidden">
+            <div id="roomCodeDisplay">
+                <p style="color: #666; margin-bottom: 10px;">Arkadaşına bu kodu gönder:</p>
+                <input type="text" id="displayCode" readonly>
+                <button onclick="copyCode()" style="margin-top: 10px; padding: 8px 16px; font-size: 14px;">📋 Kodu Kopyala</button>
+            </div>
+            <p class="status-message" id="hostStatus">Arkadaşın bağlanıyor...</p>
+        </div>
+
+        <div id="joinScreen" class="hidden">
+            <input type="text" id="roomCode" placeholder="Oda kodunu buraya yapıştır...">
+            <button id="connectBtn">Bağlan</button>
+            <button onclick="backToMenu()">⬅️ Geri</button>
+            <p class="status-message" id="joinStatus"></p>
+        </div>
+    </div>
+
+    <div id="gameContainer">
+        <div id="toolbar">
+            <span><span id="connectionStatus"></span> <strong id="playerInfo"></strong></span>
+            <button class="toolbar-btn" id="undoBtn">↶ Geri Al</button>
+            <button class="toolbar-btn" id="redoBtn">↷ İleri Al</button>
+            <button class="toolbar-btn" id="clearBtn">🗑️ Temizle</button>
+            <button class="toolbar-btn" id="saveBtn">💾 Kaydet</button>
+            <button class="toolbar-btn" id="loadBtn">📂 Yükle</button>
+            <span style="margin-left: 20px;">Zemin:</span>
+            <input type="color" id="floorColor" class="color-picker" value="#f0e6d2">
+            <span style="margin-left: 10px;">Duvar:</span>
+            <input type="color" id="wallColor" class="color-picker" value="#8b7355">
+        </div>
+
+        <div id="itemPanel">
+            <div class="item-category">
+                <h3>🛋️ Mobilya</h3>
+                <button class="item-btn" data-item="sofa">🛋️ Kanepe</button>
+                <button class="item-btn" data-item="chair">🪑 Sandalye</button>
+                <button class="item-btn" data-item="table">🪑 Masa</button>
+                <button class="item-btn" data-item="bed">🛏️ Yatak</button>
+                <button class="item-btn" data-item="cabinet">🗄️ Dolap</button>
+            </div>
+            <div class="item-category">
+                <h3>🎨 Dekorasyon</h3>
+                <button class="item-btn" data-item="rug">🟥 Halı</button>
+                <button class="item-btn" data-item="lamp">💡 Lamba</button>
+                <button class="item-btn" data-item="plant">🪴 Bitki</button>
+                <button class="item-btn" data-item="shelf">📚 Raf</button>
+                <button class="item-btn" data-item="picture">🖼️ Tablo</button>
+                <button class="item-btn" data-item="candle">🕯️ Mum</button>
+                <button class="item-btn" data-item="vase">🏺 Vazo</button>
+                <button class="item-btn" data-item="book">📖 Kitap</button>
+            </div>
+        </div>
+
+        <canvas id="canvas"></canvas>
+        <div id="statusBar">
+            🖱️ Sürükle • ⌨️ R ile döndür • 🗑️ Delete ile sil
+        </div>
+    </div>
+
+    <script>
+        // PeerJS bağlantı yönetimi
+        class GameConnection {
+            constructor() {
+                this.peer = null;
+                this.conn = null;
+                this.isHost = false;
+                this.connected = false;
+                this.peerId = null;
+                this.onMessage = null;
+                this.onConnected = null;
+            }
+
+            async createHost() {
+                this.isHost = true;
+                this.peer = new Peer();
+
+                return new Promise((resolve, reject) => {
+                    this.peer.on('open', (id) => {
+                        this.peerId = id;
+                        console.log('Host ID:', id);
+                        resolve(id);
+                    });
+
+                    this.peer.on('connection', (conn) => {
+                        this.conn = conn;
+                        this.setupConnection();
+                        console.log('Guest bağlandı!');
+                    });
+
+                    this.peer.on('error', (err) => {
+                        console.error('Peer error:', err);
+                        reject(err);
+                    });
+                });
+            }
+
+            async joinRoom(hostId) {
+                this.isHost = false;
+                this.peer = new Peer();
+
+                return new Promise((resolve, reject) => {
+                    this.peer.on('open', (id) => {
+                        this.peerId = id;
+                        console.log('Guest ID:', id);
+                        
+                        this.conn = this.peer.connect(hostId, {
+                            reliable: true
+                        });
+                        
+                        this.setupConnection();
+                        resolve(id);
+                    });
+
+                    this.peer.on('error', (err) => {
+                        console.error('Peer error:', err);
+                        reject(err);
+                    });
+                });
+            }
+
+            setupConnection() {
+                this.conn.on('open', () => {
+                    this.connected = true;
+                    console.log('Bağlantı kuruldu!');
+                    if (this.onConnected) this.onConnected();
+                    
+                    // Test mesajı gönder
+                    this.send({ type: 'ping', message: 'Merhaba!' });
+                });
+
+                this.conn.on('data', (data) => {
+                    console.log('Mesaj alındı:', data);
+                    if (this.onMessage) this.onMessage(data);
+                });
+
+                this.conn.on('close', () => {
+                    this.connected = false;
+                    console.log('Bağlantı kapandı');
+                    document.getElementById('connectionStatus').classList.remove('connected');
+                });
+
+                this.conn.on('error', (err) => {
+                    console.error('Connection error:', err);
+                });
+            }
+
+            send(data) {
+                if (this.connected && this.conn) {
+                    console.log('Mesaj gönderiliyor:', data);
+                    this.conn.send(data);
+                    return true;
+                }
+                console.warn('Bağlantı yok, mesaj gönderilemedi');
+                return false;
+            }
+        }
+
+        // Oyun nesnesi tanımları
+        const itemTypes = {
+            sofa: { width: 120, height: 60, color: '#8b4513', emoji: '🛋️' },
+            chair: { width: 40, height: 40, color: '#654321', emoji: '🪑' },
+            table: { width: 100, height: 80, color: '#8b7355', emoji: '🪑' },
+            bed: { width: 140, height: 100, color: '#f0e6d2', emoji: '🛏️' },
+            cabinet: { width: 80, height: 120, color: '#654321', emoji: '🗄️' },
+            rug: { width: 150, height: 100, color: '#c41e3a', emoji: '🟥' },
+            lamp: { width: 30, height: 30, color: '#ffd700', emoji: '💡' },
+            plant: { width: 40, height: 50, color: '#228b22', emoji: '🪴' },
+            shelf: { width: 100, height: 40, color: '#8b7355', emoji: '📚' },
+            picture: { width: 60, height: 80, color: '#4169e1', emoji: '🖼️' },
+            candle: { width: 20, height: 30, color: '#ff6347', emoji: '🕯️' },
+            vase: { width: 30, height: 40, color: '#87ceeb', emoji: '🏺' },
+            book: { width: 40, height: 30, color: '#8b4513', emoji: '📖' }
+        };
+
+        // Oyun durumu
+        class GameState {
+            constructor() {
+                this.items = [];
+                this.history = [];
+                this.historyIndex = -1;
+                this.floorColor = '#f0e6d2';
+                this.wallColor = '#8b7355';
+                this.selectedItem = null;
+                this.dragOffset = { x: 0, y: 0 };
+                this.isDragging = false;
+            }
+
+            addItem(type, x, y) {
+                const item = {
+                    id: Date.now() + Math.random(),
+                    type: type,
+                    x: x,
+                    y: y,
+                    rotation: 0,
+                    ...itemTypes[type]
+                };
+                this.items.push(item);
+                this.saveHistory();
+                return item;
+            }
+
+            removeItem(id) {
+                this.items = this.items.filter(i => i.id !== id);
+                this.saveHistory();
+            }
+
+            updateItem(id, updates) {
+                const item = this.items.find(i => i.id === id);
+                if (item) {
+                    Object.assign(item, updates);
+                }
+            }
+
+            saveHistory() {
+                this.history = this.history.slice(0, this.historyIndex + 1);
+                this.history.push(JSON.parse(JSON.stringify({
+                    items: this.items,
+                    floorColor: this.floorColor,
+                    wallColor: this.wallColor
+                })));
+                this.historyIndex++;
+            }
+
+            undo() {
+                if (this.historyIndex > 0) {
+                    this.historyIndex--;
+                    const state = this.history[this.historyIndex];
+                    this.items = JSON.parse(JSON.stringify(state.items));
+                    this.floorColor = state.floorColor;
+                    this.wallColor = state.wallColor;
+                    return true;
+                }
+                return false;
+            }
+
+            redo() {
+                if (this.historyIndex < this.history.length - 1) {
+                    this.historyIndex++;
+                    const state = this.history[this.historyIndex];
+                    this.items = JSON.parse(JSON.stringify(state.items));
+                    this.floorColor = state.floorColor;
+                    this.wallColor = state.wallColor;
+                    return true;
+                }
+                return false;
+            }
+
+            getFullState() {
+                return {
+                    items: this.items,
+                    floorColor: this.floorColor,
+                    wallColor: this.wallColor
+                };
+            }
+
+            setFullState(state) {
+                this.items = state.items || [];
+                this.floorColor = state.floorColor || '#f0e6d2';
+                this.wallColor = state.wallColor || '#8b7355';
+            }
+        }
+
+        // Ana oyun
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const connection = new GameConnection();
+        const gameState = new GameState();
+
+        canvas.width = window.innerWidth - 240;
+        canvas.height = window.innerHeight - 110;
+
+        // Yardımcı fonksiyonlar
+        function copyCode() {
+            const code = document.getElementById('displayCode');
+            code.select();
+            document.execCommand('copy');
+            alert('Kod kopyalandı! Arkadaşına gönderebilirsin.');
+        }
+
+        function backToMenu() {
+            document.getElementById('joinScreen').classList.add('hidden');
+            document.getElementById('mainMenu').classList.remove('hidden');
+        }
+
+        // Bağlantı arayüzü
+        document.getElementById('hostBtn').onclick = async () => {
+            try {
+                document.getElementById('mainMenu').classList.add('hidden');
+                document.getElementById('hostScreen').classList.remove('hidden');
+                document.getElementById('hostStatus').textContent = 'Oda oluşturuluyor...';
+                
+                const id = await connection.createHost();
+                document.getElementById('displayCode').value = id;
+                document.getElementById('hostStatus').textContent = 'Arkadaşın bağlanıyor... Lütfen bekle.';
+                
+                connection.onConnected = () => {
+                    startGame('Host');
+                };
+            } catch (err) {
+                alert('Oda açılamadı: ' + err.message);
+                backToMenu();
+            }
+        };
+
+        document.getElementById('joinBtn').onclick = () => {
+            document.getElementById('mainMenu').classList.add('hidden');
+            document.getElementById('joinScreen').classList.remove('hidden');
+        };
+
+        document.getElementById('connectBtn').onclick = async () => {
+            const code = document.getElementById('roomCode').value.trim();
+            if (!code) {
+                alert('Lütfen oda kodunu gir!');
+                return;
+            }
+
+            try {
+                document.getElementById('joinStatus').textContent = 'Bağlanıyor...';
+                await connection.joinRoom(code);
+                
+                connection.onConnected = () => {
+                    startGame('Guest');
+                };
+            } catch (err) {
+                document.getElementById('joinStatus').textContent = 'Bağlantı hatası: ' + err.message;
+            }
+        };
+
+        function startGame(role) {
+            document.getElementById('connectionPanel').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'block';
+            document.getElementById('connectionStatus').classList.add('connected');
+            document.getElementById('playerInfo').textContent = role + ' - Bağlı ✓';
+            setupGame();
+        }
+
+        // Oyun kurulumu
+        function setupGame() {
+            // Mesaj alındığında
+            connection.onMessage = (data) => {
+                console.log('Oyun mesajı alındı:', data.type);
+                
+                if (data.type === 'fullState') {
+                    gameState.setFullState(data.state);
+                } else if (data.type === 'itemAdded') {
+                    // Aynı ID'li eşya yoksa ekle
+                    if (!gameState.items.find(i => i.id === data.item.id)) {
+                        gameState.items.push(data.item);
+                    }
+                } else if (data.type === 'itemMoved') {
+                    gameState.updateItem(data.id, { x: data.x, y: data.y });
+                } else if (data.type === 'itemRotated') {
+                    gameState.updateItem(data.id, { rotation: data.rotation });
+                } else if (data.type === 'itemDeleted') {
+                    gameState.items = gameState.items.filter(i => i.id !== data.id);
+                } else if (data.type === 'colorChanged') {
+                    if (data.target === 'floor') {
+                        gameState.floorColor = data.color;
+                        document.getElementById('floorColor').value = data.color;
+                    } else if (data.target === 'wall') {
+                        gameState.wallColor = data.color;
+                        document.getElementById('wallColor').value = data.color;
+                    }
+                } else if (data.type === 'clear') {
+                    gameState.items = [];
+                }
+            };
+
+            // Eşya ekleme
+            document.querySelectorAll('.item-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const type = btn.dataset.item;
+                    const item = gameState.addItem(type, 300 + Math.random() * 100, 200 + Math.random() * 100);
+                    
+                    connection.send({
+                        type: 'itemAdded',
+                        item: item
+                    });
+                };
+            });
+
+            // Renk değiştirme
+            document.getElementById('floorColor').onchange = (e) => {
+                gameState.floorColor = e.target.value;
+                gameState.saveHistory();
+                connection.send({
+                    type: 'colorChanged',
+                    target: 'floor',
+                    color: e.target.value
+                });
+            };
+
+            document.getElementById('wallColor').onchange = (e) => {
+                gameState.wallColor = e.target.value;
+                gameState.saveHistory();
+                connection.send({
+                    type: 'colorChanged',
+                    target: 'wall',
+                    color: e.target.value
+                });
+            };
+
+            // Undo/Redo
+            document.getElementById('undoBtn').onclick = () => {
+                if (gameState.undo()) {
+                    connection.send({
+                        type: 'fullState',
+                        state: gameState.getFullState()
+                    });
+                }
+            };
+
+            document.getElementById('redoBtn').onclick = () => {
+                if (gameState.redo()) {
+                    connection.send({
+                        type: 'fullState',
+                        state: gameState.getFullState()
+                    });
+                }
+            };
+
+            // Temizle
+            document.getElementById('clearBtn').onclick = () => {
+                if (confirm('Tüm eşyaları silmek istediğine emin misin?')) {
+                    gameState.items = [];
+                    gameState.saveHistory();
+                    connection.send({ type: 'clear' });
+                }
+            };
+
+            // Kaydet/Yükle - Artık memory'de tutuyor
+            const savedRooms = {};
+            
+            document.getElementById('saveBtn').onclick = () => {
+                const name = prompt('Kayıt adı:');
+                if (name) {
+                    savedRooms[name] = JSON.stringify(gameState.getFullState());
+                    alert('Oda kaydedildi: ' + name);
+                }
+            };
+
+            document.getElementById('loadBtn').onclick = () => {
+                const names = Object.keys(savedRooms);
+                if (names.length === 0) {
+                    alert('Kaydedilmiş oda yok!');
+                    return;
+                }
+                const name = prompt('Yüklenecek oda:\n' + names.join('\n'));
+                if (name && savedRooms[name]) {
+                    gameState.setFullState(JSON.parse(savedRooms[name]));
+                    connection.send({
+                        type: 'fullState',
+                        state: gameState.getFullState()
+                    });
+                    alert('Oda yüklendi!');
+                }
+            };
+
+            // Mouse olayları
+            canvas.onmousedown = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                for (let i = gameState.items.length - 1; i >= 0; i--) {
+                    const item = gameState.items[i];
+                    if (x >= item.x && x <= item.x + item.width &&
+                        y >= item.y && y <= item.y + item.height) {
+                        gameState.selectedItem = item;
+                        gameState.dragOffset = { x: x - item.x, y: y - item.y };
+                        gameState.isDragging = true;
+                        break;
+                    }
+                }
+            };
+
+            canvas.onmousemove = (e) => {
+                if (gameState.selectedItem && gameState.isDragging) {
+                    const rect = canvas.getBoundingClientRect();
+                    gameState.selectedItem.x = e.clientX - rect.left - gameState.dragOffset.x;
+                    gameState.selectedItem.y = e.clientY - rect.top - gameState.dragOffset.y;
+                }
+            };
+
+            canvas.onmouseup = () => {
+                if (gameState.selectedItem && gameState.isDragging) {
+                    connection.send({
+                        type: 'itemMoved',
+                        id: gameState.selectedItem.id,
+                        x: gameState.selectedItem.x,
+                        y: gameState.selectedItem.y
+                    });
+                    gameState.saveHistory();
+                    gameState.isDragging = false;
+                }
+            };
+
+            // Klavye
+            document.onkeydown = (e) => {
+                if (e.key === 'r' || e.key === 'R') {
+                    if (gameState.selectedItem) {
+                        gameState.selectedItem.rotation = (gameState.selectedItem.rotation + 45) % 360;
+                        connection.send({
+                            type: 'itemRotated',
+                            id: gameState.selectedItem.id,
+                            rotation: gameState.selectedItem.rotation
+                        });
+                        gameState.saveHistory();
+                    }
+                } else if (e.key === 'Delete') {
+                    if (gameState.selectedItem) {
+                        const id = gameState.selectedItem.id;
+                        gameState.removeItem(id);
+                        connection.send({
+                            type: 'itemDeleted',
+                            id: id
+                        });
+                        gameState.selectedItem = null;
+                    }
+                }
+            };
+
+            // Çizim döngüsü
+            function render() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Zemin
+                ctx.fillStyle = gameState.floorColor;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Grid pattern
+                ctx.strokeStyle = 'rgba(0,0,0,0.05)';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < canvas.width; i += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, 0);
+                    ctx.lineTo(i, canvas.height);
+                    ctx.stroke();
+                }
+                for (let i = 0; i < canvas.height; i += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, i);
+                    ctx.lineTo(canvas.width, i);
+                    ctx.stroke();
+                }
+
+                // Duvarlar
+                ctx.fillStyle = gameState.wallColor;
+                ctx.fillRect(0, 0, canvas.width, 20);
+                ctx.fillRect(0, 0, 20, canvas.height);
+                ctx.fillRect(canvas.width - 20, 0, 20, canvas.height);
+                ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
+
+                // Eşyalar
+                gameState.items.forEach(item => {
+                    ctx.save();
+                    ctx.translate(item.x + item.width / 2, item.y + item.height / 2);
+                    ctx.rotate(item.rotation * Math.PI / 180);
+                    
+                    // Gölge efekti
+                    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                    ctx.shadowBlur = 10;
+                    ctx.shadowOffsetX = 3;
+                    ctx.shadowOffsetY = 3;
+                    
+                    ctx.fillStyle = item.color;
+                    ctx.fillRect(-item.width / 2, -item.height / 2, item.width, item.height);
+                    
+                    // Gölgeyi kapat
+                    ctx.shadowColor = 'transparent';
+                    
+                    // Emoji
+                    ctx.font = Math.min(item.width, item.height) * 0.6 + 'px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(item.emoji, 0, 0);
+                    
+                    // Seçili eşya için border
+                    if (gameState.selectedItem && gameState.selectedItem.id === item.id) {
+                        ctx.strokeStyle = '#667eea';
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(-item.width / 2 - 2, -item.height / 2 - 2, item.width + 4, item.height + 4);
+                    }
+                    
+                    ctx.restore();
+                });
+
+                requestAnimationFrame(render);
+            }
+
+            render();
+        }
+    </script>
+</body>
+</html>
