@@ -241,24 +241,24 @@
 <body>
     <div id="connectionPanel">
         <h2>🏡 Cozy Builders</h2>
-        <p style="margin-bottom: 20px; color: #666;">Design with your friends!</p>
+        <p style="margin-bottom: 20px; color: #666;">Design a room together with your friend!</p>
         
         <div id="mainMenu">
-            <button id="hostBtn">🎮 Host</button>
-            <button id="joinBtn">🔗 Join</button>
+            <button id="hostBtn">🎮 Create Room (Host)</button>
+            <button id="joinBtn">🔗 Join Room (Guest)</button>
         </div>
 
         <div id="hostScreen" class="hidden">
             <div id="roomCodeDisplay">
-                <p style="color: #666; margin-bottom: 10px;">Share this code with your friend:</p>
+                <p style="color: #666; margin-bottom: 10px;">Send this code to your friend:</p>
                 <input type="text" id="displayCode" readonly>
-                <button onclick="copyCode()" style="margin-top: 10px; padding: 8px 16px; font-size: 14px;">📋 Copy</button>
+                <button onclick="copyCode()" style="margin-top: 10px; padding: 8px 16px; font-size: 14px;">📋 Copy Code</button>
             </div>
-            <p class="status-message" id="hostStatus">Your friends joining...</p>
+            <p class="status-message" id="hostStatus">Waiting for friend to connect...</p>
         </div>
 
         <div id="joinScreen" class="hidden">
-            <input type="text" id="roomCode" placeholder="Oda kodunu buraya yapıştır...">
+            <input type="text" id="roomCode" placeholder="Paste room code here...">
             <button id="connectBtn">Connect</button>
             <button onclick="backToMenu()">⬅️ Back</button>
             <p class="status-message" id="joinStatus"></p>
@@ -268,42 +268,56 @@
     <div id="gameContainer">
         <div id="toolbar">
             <span><span id="connectionStatus"></span> <strong id="playerInfo"></strong></span>
-            <button class="toolbar-btn" id="undoBtn">↶</button>
-            <button class="toolbar-btn" id="redoBtn">↷</button>
-            <button class="toolbar-btn" id="clearBtn">🗑️</button>
-            <button class="toolbar-btn" id="saveBtn">💾</button>
-            <button class="toolbar-btn" id="loadBtn">📂</button>
+            <button class="toolbar-btn" id="undoBtn">↶ Undo</button>
+            <button class="toolbar-btn" id="redoBtn">↷ Redo</button>
+            <button class="toolbar-btn" id="clearBtn">🗑️ Clear All</button>
+            <button class="toolbar-btn" id="saveBtn">💾 Save</button>
+            <button class="toolbar-btn" id="loadBtn">📂 Load</button>
             <span style="margin-left: 20px;">Floor:</span>
             <input type="color" id="floorColor" class="color-picker" value="#f0e6d2">
-            <span style="margin-left: 10px;">Walls:</span>
+            <span style="margin-left: 10px;">Wall:</span>
             <input type="color" id="wallColor" class="color-picker" value="#8b7355">
         </div>
 
         <div id="itemPanel">
             <div class="item-category">
                 <h3>🛋️ Furniture</h3>
-                <button class="item-btn" data-item="sofa">🛋️ Couch</button>
-                <button class="item-btn" data-item="chair">🪑 Chair</button>
-                <button class="item-btn" data-item="table">🪑 Table</button>
-                <button class="item-btn" data-item="bed">🛏️ Bed</button>
-                <button class="item-btn" data-item="cabinet">🗄️ Wardrobe</button>
+                <button class="item-btn" data-item="sofa">Sofa</button>
+                <button class="item-btn" data-item="chair">Chair</button>
+                <button class="item-btn" data-item="table">Table</button>
+                <button class="item-btn" data-item="bed">Bed</button>
+                <button class="item-btn" data-item="cabinet">Cabinet</button>
+                <button class="item-btn" data-item="desk">Desk</button>
+                <button class="item-btn" data-item="drawer">Drawer</button>
             </div>
             <div class="item-category">
                 <h3>🎨 Decoration</h3>
-                <button class="item-btn" data-item="rug">🟥 Rug</button>
-                <button class="item-btn" data-item="lamp">💡 Lamp</button>
-                <button class="item-btn" data-item="plant">🪴 Plant</button>
-                <button class="item-btn" data-item="shelf">📚 Shelf</button>
-                <button class="item-btn" data-item="picture">🖼️ Picture</button>
-                <button class="item-btn" data-item="candle">🕯️ Candle</button>
-                <button class="item-btn" data-item="vase">🏺 Vase</button>
-                <button class="item-btn" data-item="book">📖 Book</button>
+                <button class="item-btn" data-item="rug">Rug</button>
+                <button class="item-btn" data-item="lamp">Lamp</button>
+                <button class="item-btn" data-item="plant">Plant</button>
+                <button class="item-btn" data-item="shelf">Shelf</button>
+                <button class="item-btn" data-item="picture">Picture</button>
+                <button class="item-btn" data-item="candle">Candle</button>
+                <button class="item-btn" data-item="vase">Vase</button>
+                <button class="item-btn" data-item="book">Book</button>
+                <button class="item-btn" data-item="clock">Clock</button>
+                <button class="item-btn" data-item="mirror">Mirror</button>
+            </div>
+            <div class="item-category">
+                <h3>⚙️ Item Settings</h3>
+                <label style="display: block; margin: 10px 0; color: #666; font-size: 12px;">
+                    Width: <input type="number" id="itemWidth" value="64" min="16" max="256" style="width: 60px; padding: 4px;">px
+                </label>
+                <label style="display: block; margin: 10px 0; color: #666; font-size: 12px;">
+                    Height: <input type="number" id="itemHeight" value="64" min="16" max="256" style="width: 60px; padding: 4px;">px
+                </label>
+                <button class="item-btn" id="applyCustomSize" style="background: #667eea; color: white;">Apply to Selected</button>
             </div>
         </div>
 
         <canvas id="canvas"></canvas>
         <div id="statusBar">
-            🖱️ Drag • ⌨️ Rotate with R • 🗑️ Delete
+            🖱️ Drag • ⌨️ R to rotate • 🗑️ Delete to remove
         </div>
     </div>
 
@@ -405,39 +419,46 @@
             }
         }
 
-        // Oyun nesnesi tanımları
+        // Oyun nesnesi tanımları - PIXEL ART İÇİN HAZIR
         const itemTypes = {
-            sofa: { width: 120, height: 60, color: '#8b4513', emoji: '🛋️', hasImage: true },
-            chair: { width: 40, height: 40, color: '#654321', emoji: '🪑', hasImage: true },
-            table: { width: 100, height: 80, color: '#8b7355', emoji: '🪑', hasImage: true },
-            bed: { width: 140, height: 100, color: '#f0e6d2', emoji: '🛏️', hasImage: true },
-            cabinet: { width: 80, height: 120, color: '#654321', emoji: '🗄️', hasImage: true },
-            rug: { width: 150, height: 100, color: '#c41e3a', emoji: '🟥', hasImage: true },
-            lamp: { width: 30, height: 30, color: '#ffd700', emoji: '💡', hasImage: true },
-            plant: { width: 40, height: 50, color: '#228b22', emoji: '🪴', hasImage: true },
-            shelf: { width: 100, height: 40, color: '#8b7355', emoji: '📚', hasImage: true },
-            picture: { width: 60, height: 80, color: '#4169e1', emoji: '🖼️', hasImage: true },
-            candle: { width: 20, height: 30, color: '#ff6347', emoji: '🕯️', hasImage: true },
-            vase: { width: 30, height: 40, color: '#87ceeb', emoji: '🏺', hasImage: true },
-            book: { width: 40, height: 30, color: '#8b4513', emoji: '📖', hasImage: true }
+            // Furniture
+            sofa: { width: 96, height: 48, color: '#8b4513', emoji: '🛋️', hasImage: true },
+            chair: { width: 32, height: 32, color: '#654321', emoji: '🪑', hasImage: true },
+            table: { width: 64, height: 64, color: '#8b7355', emoji: '🪑', hasImage: true },
+            bed: { width: 96, height: 64, color: '#f0e6d2', emoji: '🛏️', hasImage: true },
+            cabinet: { width: 64, height: 96, color: '#654321', emoji: '🗄️', hasImage: true },
+            desk: { width: 80, height: 48, color: '#8b7355', emoji: '🖥️', hasImage: true },
+            drawer: { width: 48, height: 64, color: '#654321', emoji: '🗄️', hasImage: true },
+            
+            // Decoration
+            rug: { width: 128, height: 96, color: '#c41e3a', emoji: '🟥', hasImage: true },
+            lamp: { width: 24, height: 32, color: '#ffd700', emoji: '💡', hasImage: true },
+            plant: { width: 32, height: 48, color: '#228b22', emoji: '🪴', hasImage: true },
+            shelf: { width: 80, height: 32, color: '#8b7355', emoji: '📚', hasImage: true },
+            picture: { width: 48, height: 64, color: '#4169e1', emoji: '🖼️', hasImage: true },
+            candle: { width: 16, height: 24, color: '#ff6347', emoji: '🕯️', hasImage: true },
+            vase: { width: 24, height: 32, color: '#87ceeb', emoji: '🏺', hasImage: true },
+            book: { width: 32, height: 24, color: '#8b4513', emoji: '📖', hasImage: true },
+            clock: { width: 32, height: 32, color: '#ffd700', emoji: '🕐', hasImage: true },
+            mirror: { width: 48, height: 64, color: '#87ceeb', emoji: '🪞', hasImage: true }
         };
 
         // RESİMLERİ YÜK - GitHub'dan çekecek!
         const images = {};
         const imagePath = './assets/items/'; // GitHub Pages'te bu şekilde çalışır
         
-        function loadItemImages() {
+                    function loadItemImages() {
             Object.keys(itemTypes).forEach(itemName => {
                 if (itemTypes[itemName].hasImage) {
                     const img = new Image();
                     img.src = imagePath + itemName + '.png';
                     img.onerror = () => {
-                        console.warn(`Resim yüklenemedi: ${itemName}.png - Emoji kullanılacak`);
+                        console.warn(`Image not loaded: ${itemName}.png - Using emoji fallback`);
                     };
                     images[itemName] = img;
                 }
             });
-            console.log('Tileset resimleri yükleniyor...');
+            console.log('Loading tileset images...');
         }
         
         // Resimleri hemen yükle
@@ -551,7 +572,7 @@
             const code = document.getElementById('displayCode');
             code.select();
             document.execCommand('copy');
-            alert('Kod kopyalandı! Arkadaşına gönderebilirsin.');
+            alert('Code copied! Send it to your friend.');
         }
 
         function backToMenu() {
@@ -564,17 +585,17 @@
             try {
                 document.getElementById('mainMenu').classList.add('hidden');
                 document.getElementById('hostScreen').classList.remove('hidden');
-                document.getElementById('hostStatus').textContent = 'Oda oluşturuluyor...';
+                document.getElementById('hostStatus').textContent = 'Creating room...';
                 
                 const id = await connection.createHost();
                 document.getElementById('displayCode').value = id;
-                document.getElementById('hostStatus').textContent = 'Arkadaşın bağlanıyor... Lütfen bekle.';
+                document.getElementById('hostStatus').textContent = 'Waiting for friend to connect... Please wait.';
                 
                 connection.onConnected = () => {
                     startGame('Host');
                 };
             } catch (err) {
-                alert('Oda açılamadı: ' + err.message);
+                alert('Failed to create room: ' + err.message);
                 backToMenu();
             }
         };
@@ -587,19 +608,19 @@
         document.getElementById('connectBtn').onclick = async () => {
             const code = document.getElementById('roomCode').value.trim();
             if (!code) {
-                alert('Lütfen oda kodunu gir!');
+                alert('Please enter a room code!');
                 return;
             }
 
             try {
-                document.getElementById('joinStatus').textContent = 'Bağlanıyor...';
+                document.getElementById('joinStatus').textContent = 'Connecting...';
                 await connection.joinRoom(code);
                 
                 connection.onConnected = () => {
                     startGame('Guest');
                 };
             } catch (err) {
-                document.getElementById('joinStatus').textContent = 'Bağlantı hatası: ' + err.message;
+                document.getElementById('joinStatus').textContent = 'Connection error: ' + err.message;
             }
         };
 
@@ -615,7 +636,7 @@
         function setupGame() {
             // Mesaj alındığında
             connection.onMessage = (data) => {
-                console.log('Oyun mesajı alındı:', data.type);
+                console.log('Game message received:', data.type);
                 
                 if (data.type === 'fullState') {
                     gameState.setFullState(data.state);
@@ -628,6 +649,8 @@
                     gameState.updateItem(data.id, { x: data.x, y: data.y });
                 } else if (data.type === 'itemRotated') {
                     gameState.updateItem(data.id, { rotation: data.rotation });
+                } else if (data.type === 'itemResized') {
+                    gameState.updateItem(data.id, { width: data.width, height: data.height });
                 } else if (data.type === 'itemDeleted') {
                     gameState.items = gameState.items.filter(i => i.id !== data.id);
                 } else if (data.type === 'colorChanged') {
@@ -647,14 +670,37 @@
             document.querySelectorAll('.item-btn').forEach(btn => {
                 btn.onclick = () => {
                     const type = btn.dataset.item;
-                    const item = gameState.addItem(type, 300 + Math.random() * 100, 200 + Math.random() * 100);
-                    
-                    connection.send({
-                        type: 'itemAdded',
-                        item: item
-                    });
+                    if (type) {
+                        const item = gameState.addItem(type, 300 + Math.random() * 100, 200 + Math.random() * 100);
+                        
+                        connection.send({
+                            type: 'itemAdded',
+                            item: item
+                        });
+                    }
                 };
             });
+
+            // Custom boyut uygulama - SEÇİLİ EŞYAYI YENİDEN BOYUTLANDIR
+            document.getElementById('applyCustomSize').onclick = () => {
+                if (gameState.selectedItem) {
+                    const newWidth = parseInt(document.getElementById('itemWidth').value);
+                    const newHeight = parseInt(document.getElementById('itemHeight').value);
+                    
+                    gameState.selectedItem.width = newWidth;
+                    gameState.selectedItem.height = newHeight;
+                    gameState.saveHistory();
+                    
+                    connection.send({
+                        type: 'itemResized',
+                        id: gameState.selectedItem.id,
+                        width: newWidth,
+                        height: newHeight
+                    });
+                } else {
+                    alert('Please select an item first!');
+                }
+            };
 
             // Renk değiştirme
             document.getElementById('floorColor').onchange = (e) => {
@@ -698,7 +744,7 @@
 
             // Temizle
             document.getElementById('clearBtn').onclick = () => {
-                if (confirm('Tüm eşyaları silmek istediğine emin misin?')) {
+                if (confirm('Are you sure you want to delete all items?')) {
                     gameState.items = [];
                     gameState.saveHistory();
                     connection.send({ type: 'clear' });
@@ -709,35 +755,37 @@
             const savedRooms = {};
             
             document.getElementById('saveBtn').onclick = () => {
-                const name = prompt('Kayıt adı:');
+                const name = prompt('Save name:');
                 if (name) {
                     savedRooms[name] = JSON.stringify(gameState.getFullState());
-                    alert('Oda kaydedildi: ' + name);
+                    alert('Room saved: ' + name);
                 }
             };
 
             document.getElementById('loadBtn').onclick = () => {
                 const names = Object.keys(savedRooms);
                 if (names.length === 0) {
-                    alert('Kaydedilmiş oda yok!');
+                    alert('No saved rooms found!');
                     return;
                 }
-                const name = prompt('Yüklenecek oda:\n' + names.join('\n'));
+                const name = prompt('Load room:\n' + names.join('\n'));
                 if (name && savedRooms[name]) {
                     gameState.setFullState(JSON.parse(savedRooms[name]));
                     connection.send({
                         type: 'fullState',
                         state: gameState.getFullState()
                     });
-                    alert('Oda yüklendi!');
+                    alert('Room loaded!');
                 }
             };
 
             // Mouse olayları
             canvas.onmousedown = (e) => {
                 const rect = canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const x = (e.clientX - rect.left) * scaleX;
+                const y = (e.clientY - rect.top) * scaleY;
 
                 for (let i = gameState.items.length - 1; i >= 0; i--) {
                     const item = gameState.items[i];
@@ -746,6 +794,10 @@
                         gameState.selectedItem = item;
                         gameState.dragOffset = { x: x - item.x, y: y - item.y };
                         gameState.isDragging = true;
+                        
+                        // Seçili eşyanın boyutlarını input'lara yaz
+                        document.getElementById('itemWidth').value = item.width;
+                        document.getElementById('itemHeight').value = item.height;
                         break;
                     }
                 }
@@ -754,8 +806,10 @@
             canvas.onmousemove = (e) => {
                 if (gameState.selectedItem && gameState.isDragging) {
                     const rect = canvas.getBoundingClientRect();
-                    gameState.selectedItem.x = e.clientX - rect.left - gameState.dragOffset.x;
-                    gameState.selectedItem.y = e.clientY - rect.top - gameState.dragOffset.y;
+                    const scaleX = canvas.width / rect.width;
+                    const scaleY = canvas.height / rect.height;
+                    gameState.selectedItem.x = (e.clientX - rect.left) * scaleX - gameState.dragOffset.x;
+                    gameState.selectedItem.y = (e.clientY - rect.top) * scaleY - gameState.dragOffset.y;
                 }
             };
 
