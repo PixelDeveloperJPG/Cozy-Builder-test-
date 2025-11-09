@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cozy Builders - Multiplayer Room Designer</title>
+    <title>Cozy Builders</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
     <style>
         * {
@@ -14,7 +14,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #93c47d 0%, #c27ba0 100%);
             overflow: hidden;
             height: 100vh;
         }
@@ -34,12 +34,12 @@
         }
 
         #connectionPanel h2 {
-            color: #667eea;
+            color: #ead1dc;
             margin-bottom: 20px;
         }
 
         #connectionPanel button {
-            background: #667eea;
+            background: #ead1dc;
             color: white;
             border: none;
             padding: 12px 30px;
@@ -86,7 +86,7 @@
         }
 
         .toolbar-btn {
-            background: #667eea;
+            background: #674ea7;
             color: white;
             border: none;
             padding: 10px 20px;
@@ -97,7 +97,7 @@
         }
 
         .toolbar-btn:hover {
-            background: #764ba2;
+            background: #674ea7;
             transform: scale(1.05);
         }
 
@@ -119,10 +119,10 @@
         }
 
         .item-category h3 {
-            color: #667eea;
+            color: #9fc5e8;
             font-size: 14px;
             margin-bottom: 10px;
-            border-bottom: 2px solid #667eea;
+            border-bottom: 2px solid #9fc5e8;
             padding-bottom: 5px;
         }
 
@@ -139,8 +139,8 @@
         }
 
         .item-btn:hover {
-            background: #f0f0f0;
-            border-color: #667eea;
+            background: #bcbcbc;
+            border-color: #9fc5e8;
             transform: translateX(5px);
         }
 
@@ -241,26 +241,26 @@
 <body>
     <div id="connectionPanel">
         <h2>🏡 Cozy Builders</h2>
-        <p style="margin-bottom: 20px; color: #666;">Arkadaşınla birlikte oda tasarla!</p>
+        <p style="margin-bottom: 20px; color: #666;">Design with your friends!</p>
         
         <div id="mainMenu">
-            <button id="hostBtn">🎮 Oda Aç (Host)</button>
-            <button id="joinBtn">🔗 Odaya Katıl (Join)</button>
+            <button id="hostBtn">🎮 Host</button>
+            <button id="joinBtn">🔗 Join</button>
         </div>
 
         <div id="hostScreen" class="hidden">
             <div id="roomCodeDisplay">
-                <p style="color: #666; margin-bottom: 10px;">Arkadaşına bu kodu gönder:</p>
+                <p style="color: #666; margin-bottom: 10px;">Share this code with your friend:</p>
                 <input type="text" id="displayCode" readonly>
-                <button onclick="copyCode()" style="margin-top: 10px; padding: 8px 16px; font-size: 14px;">📋 Kodu Kopyala</button>
+                <button onclick="copyCode()" style="margin-top: 10px; padding: 8px 16px; font-size: 14px;">📋 Copy</button>
             </div>
-            <p class="status-message" id="hostStatus">Arkadaşın bağlanıyor...</p>
+            <p class="status-message" id="hostStatus">Your friends joining...</p>
         </div>
 
         <div id="joinScreen" class="hidden">
             <input type="text" id="roomCode" placeholder="Oda kodunu buraya yapıştır...">
-            <button id="connectBtn">Bağlan</button>
-            <button onclick="backToMenu()">⬅️ Geri</button>
+            <button id="connectBtn">Connect</button>
+            <button onclick="backToMenu()">⬅️ Back</button>
             <p class="status-message" id="joinStatus"></p>
         </div>
     </div>
@@ -268,42 +268,42 @@
     <div id="gameContainer">
         <div id="toolbar">
             <span><span id="connectionStatus"></span> <strong id="playerInfo"></strong></span>
-            <button class="toolbar-btn" id="undoBtn">↶ Geri Al</button>
-            <button class="toolbar-btn" id="redoBtn">↷ İleri Al</button>
-            <button class="toolbar-btn" id="clearBtn">🗑️ Temizle</button>
-            <button class="toolbar-btn" id="saveBtn">💾 Kaydet</button>
-            <button class="toolbar-btn" id="loadBtn">📂 Yükle</button>
-            <span style="margin-left: 20px;">Zemin:</span>
+            <button class="toolbar-btn" id="undoBtn">↶</button>
+            <button class="toolbar-btn" id="redoBtn">↷</button>
+            <button class="toolbar-btn" id="clearBtn">🗑️</button>
+            <button class="toolbar-btn" id="saveBtn">💾</button>
+            <button class="toolbar-btn" id="loadBtn">📂</button>
+            <span style="margin-left: 20px;">Floor:</span>
             <input type="color" id="floorColor" class="color-picker" value="#f0e6d2">
-            <span style="margin-left: 10px;">Duvar:</span>
+            <span style="margin-left: 10px;">Walls:</span>
             <input type="color" id="wallColor" class="color-picker" value="#8b7355">
         </div>
 
         <div id="itemPanel">
             <div class="item-category">
-                <h3>🛋️ Mobilya</h3>
-                <button class="item-btn" data-item="sofa">🛋️ Kanepe</button>
-                <button class="item-btn" data-item="chair">🪑 Sandalye</button>
-                <button class="item-btn" data-item="table">🪑 Masa</button>
-                <button class="item-btn" data-item="bed">🛏️ Yatak</button>
-                <button class="item-btn" data-item="cabinet">🗄️ Dolap</button>
+                <h3>🛋️ Furniture</h3>
+                <button class="item-btn" data-item="sofa">🛋️ Couch</button>
+                <button class="item-btn" data-item="chair">🪑 Chair</button>
+                <button class="item-btn" data-item="table">🪑 Table</button>
+                <button class="item-btn" data-item="bed">🛏️ Bed</button>
+                <button class="item-btn" data-item="cabinet">🗄️ Wardrobe</button>
             </div>
             <div class="item-category">
-                <h3>🎨 Dekorasyon</h3>
-                <button class="item-btn" data-item="rug">🟥 Halı</button>
-                <button class="item-btn" data-item="lamp">💡 Lamba</button>
-                <button class="item-btn" data-item="plant">🪴 Bitki</button>
-                <button class="item-btn" data-item="shelf">📚 Raf</button>
-                <button class="item-btn" data-item="picture">🖼️ Tablo</button>
-                <button class="item-btn" data-item="candle">🕯️ Mum</button>
-                <button class="item-btn" data-item="vase">🏺 Vazo</button>
-                <button class="item-btn" data-item="book">📖 Kitap</button>
+                <h3>🎨 Decoration</h3>
+                <button class="item-btn" data-item="rug">🟥 Rug</button>
+                <button class="item-btn" data-item="lamp">💡 Lamp</button>
+                <button class="item-btn" data-item="plant">🪴 Plant</button>
+                <button class="item-btn" data-item="shelf">📚 Shelf</button>
+                <button class="item-btn" data-item="picture">🖼️ Picture</button>
+                <button class="item-btn" data-item="candle">🕯️ Candle</button>
+                <button class="item-btn" data-item="vase">🏺 Vase</button>
+                <button class="item-btn" data-item="book">📖 Book</button>
             </div>
         </div>
 
         <canvas id="canvas"></canvas>
         <div id="statusBar">
-            🖱️ Sürükle • ⌨️ R ile döndür • 🗑️ Delete ile sil
+            🖱️ Drag • ⌨️ Rotate with R • 🗑️ Delete
         </div>
     </div>
 
@@ -881,3 +881,4 @@
     </script>
 </body>
 </html>
+
